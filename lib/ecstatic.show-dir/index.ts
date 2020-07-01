@@ -1,4 +1,5 @@
-/// <reference path="../../typescript_type/fs.d.ts/>
+
+/// <reference path="../../../typescript_type/fs.d.ts/>
 'use strict';
 
 const styles = require('./styles');
