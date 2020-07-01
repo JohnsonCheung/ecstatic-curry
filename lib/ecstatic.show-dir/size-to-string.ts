@@ -4,7 +4,9 @@
 // humanReadable: (boolean) whether to result is human readable
 // si: (boolean) whether to use si (1k = 1000), otherwise 1k = 1024
 // adopted from http://stackoverflow.com/a/14919494/665507
-module.exports = function sizeToString(stat, humanReadable, si) {
+import fs from 'fs';
+type b = boolean
+module.exports = function sizeToString(stat:fs.Stats, humanReadable:b, si:b) {
   if (stat.isDirectory && stat.isDirectory()) {
     return '';
   }
@@ -22,9 +24,7 @@ module.exports = function sizeToString(stat, humanReadable, si) {
     bytes /= threshold;
     u += 1;
   } while (bytes >= threshold);
-
-  let b = bytes.toFixed(1);
-  if (isNaN(b)) b = '??';
-
+  let b = Number.parseFloat(bytes.toFixed(1));
+  let c = isNaN(b) ? b.toString() : '??'
   return b + units[u];
 };

@@ -1,11 +1,13 @@
+import fs from 'fs';
 'use strict';
 
-module.exports = function permsToString(stat) {
-  if (!stat.isDirectory || !stat.mode) {
+export function permStr(stat:fs.Stats) {
+  const isDir = stat.isDirectory();
+  if (!isDir || !stat.mode) {
     return '???!!!???';
   }
 
-  const dir = stat.isDirectory() ? 'd' : '-';
+  const dir = isDir ? 'd' : '-';
   const mode = stat.mode.toString(8);
 
   return dir + mode.slice(-3).split('').map(n => [
