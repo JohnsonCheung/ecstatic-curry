@@ -1,3 +1,4 @@
+/// <reference path="../../typescript_type/fs.d.ts/>
 'use strict';
 
 const styles = require('./styles');
@@ -9,66 +10,73 @@ const path = require('path');
 const he = require('he');
 const etag = require('../etag');
 const url = require('url');
-const status = require('../status-handlers');
+const sts = require('../sts-handlers');
 
 const supportedIcons = styles.icons;
 const css = styles.css;
 
-module.exports = (opts) => {
-  // opts are parsed by opts.js, defaults already applied
-  const cache = opts.cache;
-  const root = path.resolve(opts.root);
-  const baseDir = opts.baseDir;
-  const humanReadable = opts.humanReadable;
-  const hidePermissions = opts.hidePermissions;
-  const handleError = opts.handleError;
-  const showDotfiles = opts.showDotfiles;
-  const si = opts.si;
-  const weakEtags = opts.weakEtags;
-
-  return function middleware(req, res, next) {
-    // Figure out the path for the file from the given url
-    const parsed = url.parse(req.url);
-    const pathname = decodeURIComponent(parsed.pathname);
-    const dir = path.normalize(
-      path.join(
+type s = string
+type path = string
+const w1DirServ = (root:path, baseDir:path, pathname:path):path => path.normalize(
+    path.join(
         root,
         path.relative(
-          path.join('/', baseDir),
-          pathname
+            path.join('/', baseDir),
+            pathname
         )
-      )
-    );
+    )
+);
+const w1ReadDir = async() => 1
 
-    fs.stat(dir, (statErr, stat) => {
-      if (statErr) {
-        status[500](res, next, { error: statErr, handleError });
-        return;
-      }
+var mkAsynFun = (cbFun, aa) => [cbFun, aa]
+const middleware = async opts => {
+        // opts are parsed by opts.js, defaults already applied
+        const cache = opts.cache;
+        const root = path.resolve(opts.root);
+        const baseDir = opts.baseDir;
+        const humanReadable = opts.humanReadable;
+        const hidePermissions = opts.hidePermissions;
+        const handleError = opts.handleError;
+        const showDotfiles = opts.showDotfiles;
+        const si = opts.si;
+        const weakEtags = opts.weakEtags;
+        return middleware
 
-      // files are the listing of dir
-      fs.readdir(dir, (readErr, _files) => {
-        let files = _files;
+        async function middleware(req, res, next) {
+            // Figure out the path for the file from the given url
+            const parsed = url.parse(req.url);
+            const pathname = decodeURIComponent(parsed.pathname);
+            const dirServ = w1DirServ(root, baseDir, pathname)
 
-        if (readErr) {
-          status[500](res, next, { error: readErr, handleError });
-          return;
-        }
+            fs.stat(dirServ, (statErr, stat) => {
+                        if (statErr) {
+                            sts[500](res, next, { error: statErr, handleError });
+                            return;
+                        }
 
-        // Optionally exclude dotfiles from directory listing.
-        if (!showDotfiles) {
-          files = files.filter(filename => filename.slice(0, 1) !== '.');
-        }
+                        // files are the listing of dir
+                        fs.readdir(dirServ, (readErr, _files) => {
+                                    let files = _files;
 
-        res.setHeader('content-type', 'text/html');
-        res.setHeader('etag', etag(stat, weakEtags));
-        res.setHeader('last-modified', (new Date(stat.mtime)).toUTCString());
-        res.setHeader('cache-control', cache);
+                                    if (readErr) {
+                                        sts[500](res, next, { error: readErr, handleError });
+                                        return;
+                                    }
 
-        function render(dirs, renderFiles, lolwuts) {
-          // each entry in the array is a [name, stat] tuple
+                                    // Optionally exclude dotfiles from directory listing.
+                                    if (!showDotfiles) {
+                                        files = files.filter(filename => filename.slice(0, 1) !== '.');
+                                    }
 
-          let html = `${[
+                                    res.setHeader('content-type', 'text/html');
+                                    res.setHeader('etag', etag(stat, weakEtags));
+                                    res.setHeader('last-modified', (new Date(stat.mtime)).toUTCString());
+                                    res.setHeader('cache-control', cache);
+
+                                    function render(dirs, renderFiles, lolwuts) {
+                                        // each entry in the array is a [name, stat] tuple
+
+                                        let html = `${[
             '<!doctype html>',
             '<html>',
             '  <head>',
@@ -131,7 +139,7 @@ module.exports = (opts) => {
           }
         }
 
-        sortFiles(dir, files, (lolwuts, dirs, sortedFiles) => {
+        sortFiles(dirServ, files, (lolwuts, dirs, sortedFiles) => {
           // It's possible to get stat errors for all sorts of reasons here.
           // Unfortunately, our two choices are to either bail completely,
           // or just truck along as though everything's cool. In this case,
@@ -141,10 +149,10 @@ module.exports = (opts) => {
           // Whatever.
 
           // if it makes sense to, add a .. link
-          if (path.resolve(dir, '..').slice(0, root.length) === root) {
-            fs.stat(path.join(dir, '..'), (err, s) => {
+          if (path.resolve(dirServ, '..').slice(0, root.length) === root) {
+            fs.stat(path.join(dirServ, '..'), (err, s) => {
               if (err) {
-                status[500](res, next, { error: err, handleError });
+                sts[500](res, next, { error: err, handleError });
                 return;
               }
               dirs.unshift(['..', s]);
@@ -158,3 +166,6 @@ module.exports = (opts) => {
     });
   };
 };
+
+module.exports = middleware
+if(module.id==".") require(__dirname + "/test/" + __filename).test

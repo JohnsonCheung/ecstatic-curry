@@ -1,3 +1,22 @@
+# THIS PROJECT IS COPIED FROM `ecstatic` on 2020-07-01 becomes `ecstatic-curry`
+
+It is going to re-code in typescript, curry, asyn, no-state-change object, good name, structure, each file test and calling library styles
+* typescript: the program will be re-code in *.ts
+* curry: try if possible use curry style parameters, example 
+  function x(a,b) {} will become
+  const x = a => b => {}
+* asyn: using asyn / await keywords instead of call back function.  function mkPromise will make a promise function from stanadard nodejs function.  This needs to re-code from the multiple call back level in linear style.
+* no-state-change-object: 
+* struct: 
+** in order of 
+    export function, 
+    vv-functions: called only one time not export
+    ww-functions: called more than one time not export function
+    sub-function: instead
+* calling library: 
+    re-usable functions will be put in library.
+* each file test:
+    each source file will have *.tst.js file to test that *.js
 # THIS PROJECT IS UNMAINTAINED AND DEPRECATED
 
 Please use something else. See: https://github.com/jfhbrook/node-ecstatic/issues/259
